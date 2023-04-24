@@ -2,13 +2,14 @@ import requests
 from bs4 import BeautifulSoup
 import pandas as pd
 
+# Website of teh 1500 most common chinese characters.
 url = 'https://learnchinesecharacters.academy/common-chinese-characters/'
 
+# Spoof the website to bypass webscraping restrictions
 headers = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'}
 
 response = requests.get(url, headers=headers)
-
 soup = BeautifulSoup(response.content, 'html.parser')
 
 # Find the table containing the common Chinese characters

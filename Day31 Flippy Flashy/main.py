@@ -1,23 +1,42 @@
+# Import necessary libraries
 from tkinter import *
 import pandas as pd
 import random
 
+# Global variables and dictionaries...  "number_of_days" = Number of days spent learning 
 BACKGROUND_COLOR = "#B1DDC6"
 current_card = {}
 to_learn = {}
+todays_list = {}
+number_of_days = 1    # 
 
+# Makes sure you have scraped data to read, then adds to the "to_learn" dictionary
 try:
-    data = pd.read_csv("data/words_to_learn.csv")
+    data = pd.read_csv("data/scraped_data.csv")
 except FileNotFoundError:
-    original_data = pd.read_csv("data/chinese_vocab.csv")
-    to_learn = original_data.to_dict(orient="records")
+    print("you need to input scraped word data")
 else:
     to_learn = data.to_dict(orient="records")
+
+# Gets the current days list to learn by inputing # of Days. ex. Day12 will gather #121-130 and input them into "todays_list"
+def get_todays_list(number_of_days):
+    global todays_list
+    start_index = (number_of_days - 1) * 10
+    end_index = start_index + 10
+    todays_list = to_learn[start_index:end_index]
+    try:
+        review_words = pd.read_csv("data/review_words.csv")
+    except FileNotFoundError:
+        with open("data/review_words.csv", "w") as f:
+            f.write("")
+    else:
+        review_words = data.to_dict(orient="records")
+    
 
 
 def next_card():
     global current_card
-    current_card = random.choice(to_learn)
+    current_card = random.choice(todays_list)
     canvas.itemconfig(card_title, text="Chinese", fill="black")
     canvas.itemconfig(card_word, text=current_card["Character"], fill="black")
     canvas.itemconfig(card_pinyin, text=current_card["Pinyin"], fill="black")
@@ -37,12 +56,7 @@ def flip_card(event):
         canvas.itemconfig(card_background, image=card_front_img)
 
 
-def is_known():
-    to_learn.remove(current_card)
-    print(len(to_learn))
-    data = pd.DataFrame(to_learn)
-    data.to_csv("data/words_to_learn.csv", index=False)
-    next_card()
+
 
 
 window = Tk()
@@ -64,10 +78,14 @@ unknown_button = Button(image=cross_image, highlightthickness=0, command=next_ca
 unknown_button.grid(row=1, column=0)
 
 check_image = PhotoImage(file="images/right.png")
-known_button = Button(image=check_image, highlightthickness=0, command=is_known)
+known_button = Button(image=check_image, highlightthickness=0, command=next_card)
 known_button.grid(row=1, column=1)
 
+get_todays_list(number_of_days)
 next_card()
+
+todays_list_df = pd.DataFrame(todays_list)
+print(todays_list_df.to_string(index=False))
 
 # Bind the <Button-1> event to the canvas
 canvas.bind("<Button-1>", flip_card)
