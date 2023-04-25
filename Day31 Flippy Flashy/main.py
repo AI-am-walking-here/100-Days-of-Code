@@ -8,7 +8,9 @@ BACKGROUND_COLOR = "#B1DDC6"
 current_card = {}
 to_learn = {}
 todays_list = {}
-number_of_days = 1    # 
+number_of_days = 1    
+current_index = 0  # number_of_days = Number of days spent learning 
+
 
 # Makes sure you have scraped data to read, then adds to the "to_learn" dictionary
 try:
@@ -18,25 +20,45 @@ except FileNotFoundError:
 else:
     to_learn = data.to_dict(orient="records")
 
+
+
 # Gets the current days list to learn by inputing # of Days. ex. Day12 will gather #121-130 and input them into "todays_list"
 def get_todays_list(number_of_days):
     global todays_list
     start_index = (number_of_days - 1) * 10
     end_index = start_index + 10
     todays_list = to_learn[start_index:end_index]
+    todays_list_df = pd.DataFrame(todays_list)
+    
     try:
         review_words = pd.read_csv("data/review_words.csv")
     except FileNotFoundError:
         with open("data/review_words.csv", "w") as f:
             f.write("")
-    else:
-        review_words = data.to_dict(orient="records")
+        review_words = pd.DataFrame(columns=todays_list_df.columns)
+
+    # Check if todays_list is already in the review_words DataFrame
+    is_already_in_review = False
+    for i in range(0, len(review_words), 10):
+        if review_words[i:i+10].equals(todays_list_df):
+            is_already_in_review = True
+            break
+    
+    if not is_already_in_review:
+        updated_review_data = pd.concat([review_words, todays_list_df], ignore_index=True)
+        updated_review_data.to_csv("data/review_words.csv", index=False)
     
 
-
 def next_card():
-    global current_card
-    current_card = random.choice(todays_list)
+    global current_card, current_index, todays_list
+
+    if current_index >= len(todays_list):
+        current_index = 0
+        random.shuffle(todays_list)  # Shuffle the list when it starts over
+
+    current_card = todays_list[current_index]
+    current_index += 1
+
     canvas.itemconfig(card_title, text="Chinese", fill="black")
     canvas.itemconfig(card_word, text=current_card["Character"], fill="black")
     canvas.itemconfig(card_pinyin, text=current_card["Pinyin"], fill="black")
