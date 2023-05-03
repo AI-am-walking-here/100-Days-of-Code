@@ -8,7 +8,7 @@ BACKGROUND_COLOR = "#B1DDC6"
 current_card = {}
 to_learn = {}
 todays_list = {}
-number_of_days = 1    
+number_of_days = 2    
 current_index = 0  # number_of_days = Number of days spent learning 
 
 
